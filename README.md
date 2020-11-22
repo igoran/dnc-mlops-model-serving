@@ -1,1 +1,2 @@
-# dnc-mlops-model-serving
+# Rome .NET Conference 2020
+ML Serving Project.
