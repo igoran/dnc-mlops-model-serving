@@ -3,6 +3,7 @@ using Predictor;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Predictor.Models;
 using Microsoft.Extensions.ML;
+using System.IO;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -20,7 +21,7 @@ namespace Predictor
 
             if (IsDevelopmentEnvironment) {
                 // Load From File
-                builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>().FromFile(modelName: "SentimentAnalysisModel", filePath: "model.zip", watchForChanges: false);
+                builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>().FromFile(modelName: "SentimentAnalysisModel", filePath: Path.Combine(Environment.CurrentDirectory, "model.zip"), watchForChanges: false);
             }
             else
             {

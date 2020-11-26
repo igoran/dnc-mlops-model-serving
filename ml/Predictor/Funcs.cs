@@ -12,18 +12,18 @@ using Microsoft.Extensions.ML;
 
 namespace Predictor
 {
-    public class Predictor
+    public class Funcs
     {
         private readonly PredictionEnginePool<SentimentIssue, SentimentPrediction> _predictionEnginePool;
 
-        public Predictor(PredictionEnginePool<SentimentIssue, SentimentPrediction> predictionEnginePool)
+        public Funcs(PredictionEnginePool<SentimentIssue, SentimentPrediction> predictionEnginePool)
         {
             _predictionEnginePool = predictionEnginePool;
         }
 
-        [FunctionName("Predictor")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+        [FunctionName("predictor")]
+        public async Task<IActionResult> Predict(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "predict")] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
@@ -39,7 +39,13 @@ namespace Predictor
             string sentiment = Convert.ToBoolean(prediction.Prediction) ? "Positive" : "Negative";
 
             //Return Prediction
-            return (ActionResult)new OkObjectResult(sentiment);
+            return new OkObjectResult(sentiment);
+        }
+
+        [FunctionName("ping")]
+        public IActionResult Ping([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ping")] HttpRequest req)
+        {
+            return new OkObjectResult("ok");
         }
     }
 }
