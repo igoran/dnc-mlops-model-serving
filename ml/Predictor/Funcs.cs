@@ -9,16 +9,22 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Predictor.Models;
 using Microsoft.Extensions.ML;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace Predictor
 {
     public class Funcs
     {
         private readonly PredictionEnginePool<SentimentIssue, SentimentPrediction> _predictionEnginePool;
+        private readonly TelemetryClient _telemetryClient;
 
-        public Funcs(PredictionEnginePool<SentimentIssue, SentimentPrediction> predictionEnginePool)
+        public Funcs(PredictionEnginePool<SentimentIssue, SentimentPrediction> predictionEnginePool, TelemetryConfiguration telemetryConfiguration)
         {
             _predictionEnginePool = predictionEnginePool;
+            _telemetryClient = new TelemetryClient(telemetryConfiguration);
         }
 
         [FunctionName("predictor")]
@@ -38,8 +44,33 @@ namespace Predictor
             //Convert prediction to string
             string sentiment = Convert.ToBoolean(prediction.Prediction) ? "Positive" : "Negative";
 
+            EmitTelemetry("SentimentAnalysisModel", prediction, data);
+
             //Return Prediction
             return new OkObjectResult(sentiment);
+        }
+
+        private void EmitTelemetry(string modelName, SentimentPrediction prediction, SentimentIssue data)
+        {
+            try
+            {
+                _telemetryClient.Context.Operation.Name = "AnalyzeModelResult";
+
+                var props = new Dictionary<string, string>
+                {
+                    { "model", modelName },
+                    { "text", data.SentimentText },
+                };
+
+                _telemetryClient.TrackMetric("Prediction.Probability", prediction.Probability, props);
+
+                _telemetryClient.TrackMetric("Prediction.Score", prediction.Score, props);
+
+            }
+            catch
+            {
+                // avoid fail prediction due to telemetry record saving issues
+            }
         }
 
         [FunctionName("ping")]
