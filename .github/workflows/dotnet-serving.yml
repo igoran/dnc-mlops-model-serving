@@ -13,13 +13,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET
+      name: Checkout unshallow
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
-    - name: Restore dependencies
+    - name: Install dependencies
       run: dotnet restore
+      working-directory: ml
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build ml/ml.sln --configuration Release --no-restore      
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --no-build --verbosity normal
+      env:
+        ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
