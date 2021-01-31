@@ -1,11 +1,11 @@
 ﻿using System;
-using Predictor;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Predictor.Models;
-using Microsoft.Extensions.ML;
 using System.IO;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ML;
+using Predictor;
+using Predictor.Models;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -13,44 +13,45 @@ namespace Predictor
 {
     public class Startup : FunctionsStartup
     {
-        private string _environment;
-        private string _aiKey;
-        private string _modelUri;
+        public virtual bool IsDevelopmentEnvironment => "Development".Equals(Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT"), StringComparison.OrdinalIgnoreCase);
 
-        private bool IsDevelopmentEnvironment => "Development".Equals(_environment, StringComparison.OrdinalIgnoreCase);
+        public virtual Uri GetModelUri() {
+
+            var uri = Environment.GetEnvironmentVariable("ML_MODEL_URI") ?? string.Empty;
+
+            if (Uri.TryCreate(uri, UriKind.Absolute, out var _)) {
+                return new Uri(uri);
+            }
+
+            return new Uri("http://localhost/model.zip");
+        }
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            _environment = Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT");
-            _aiKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
-            _modelUri = Environment.GetEnvironmentVariable("ML_MODEL_URI");
+            var modelUri = GetModelUri();
 
-            var predictionEngine = builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>();
+            builder.Services.AddSingleton(sp => modelUri);
 
-            if (IsDevelopmentEnvironment)
-            {
-                // Load From File
-                predictionEngine.FromFile(modelName: "SentimentAnalysisModel", filePath: Path.Combine(Environment.CurrentDirectory, "model.zip"), watchForChanges: true);
-            }
-            else if (Uri.TryCreate(_modelUri, UriKind.RelativeOrAbsolute, out var _))
-            {
-                predictionEngine.FromUri(_modelUri);
-            }
-            else
-            {
-                Console.WriteLine($"{_environment} {_modelUri}");
-                throw new ApplicationException($"Invalid Model Uri. Environment={_environment} Uri={_modelUri}");
-            }
-
-            builder.Services.AddSingleton(sp =>
+            builder.Services.AddSingleton<IMetricsClient>(sp =>
             {
                 var telemetryConfiguration = new TelemetryConfiguration
                 {
-                    InstrumentationKey = _aiKey
+                    InstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY")
                 };
+
                 telemetryConfiguration.TelemetryInitializers.Add(new OperationCorrelationTelemetryInitializer());
-                return telemetryConfiguration;
+
+                return new ApplicationInsightsMetricsClient(telemetryConfiguration);
             });
+
+            if (modelUri.IsLoopback)
+            {
+                builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>().FromFile(modelName: Constants.ModelName, filePath: Path.Combine(Environment.CurrentDirectory, "model.zip"), watchForChanges: false);
+            }
+            else
+            {
+                builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>().FromUri(modelUri.ToString());
+            }
         }
     }
 }

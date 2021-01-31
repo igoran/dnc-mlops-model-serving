@@ -1,30 +1,26 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ML;
 using Newtonsoft.Json;
 using Predictor.Models;
-using Microsoft.Extensions.ML;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
-using System.Collections.Generic;
-using System.Globalization;
 
 namespace Predictor
 {
     public class Funcs
     {
         private readonly PredictionEnginePool<SentimentIssue, SentimentPrediction> _predictionEnginePool;
-        private readonly TelemetryClient _telemetryClient;
+        private readonly IMetricsClient _telemetryClient;
 
-        public Funcs(PredictionEnginePool<SentimentIssue, SentimentPrediction> predictionEnginePool, TelemetryConfiguration telemetryConfiguration)
+        public Funcs(PredictionEnginePool<SentimentIssue, SentimentPrediction> predictionEnginePool, IMetricsClient telemetryClient)
         {
             _predictionEnginePool = predictionEnginePool;
-            _telemetryClient = new TelemetryClient(telemetryConfiguration);
+            _telemetryClient = telemetryClient;
         }
 
         [FunctionName("predictor")]
@@ -35,42 +31,23 @@ namespace Predictor
             log.LogInformation("C# HTTP trigger function processed a request.");
 
             //Parse HTTP Request Body
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            SentimentIssue data = JsonConvert.DeserializeObject<SentimentIssue>(requestBody);
+            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var sentimentIssue = JsonConvert.DeserializeObject<SentimentIssue>(requestBody);
 
-            //Make Prediction
-            SentimentPrediction prediction = _predictionEnginePool.Predict(modelName: "SentimentAnalysisModel", example: data);
+            if (string.IsNullOrEmpty(sentimentIssue?.SentimentText)) {
+                return new BadRequestResult();
+            }
+
+            //Make Prediction   
+            var sentimentPrediction = _predictionEnginePool.Predict(modelName: Constants.ModelName, example: sentimentIssue);
 
             //Convert prediction to string
-            string sentiment = Convert.ToBoolean(prediction.Prediction) ? "Positive" : "Negative";
+            string sentiment = Convert.ToBoolean(sentimentPrediction.Prediction) ? "Positive" : "Negative";
 
-            EmitTelemetry("SentimentAnalysisModel", prediction, data);
+            _telemetryClient.Track(sentimentPrediction, sentimentIssue);
 
             //Return Prediction
             return new OkObjectResult(sentiment);
-        }
-
-        private void EmitTelemetry(string modelName, SentimentPrediction prediction, SentimentIssue data)
-        {
-            try
-            {
-                _telemetryClient.Context.Operation.Name = "AnalyzeModelResult";
-
-                var props = new Dictionary<string, string>
-                {
-                    { "model", modelName },
-                    { "text", data.SentimentText },
-                };
-
-                _telemetryClient.TrackMetric("Prediction.Probability", prediction.Probability, props);
-
-                _telemetryClient.TrackMetric("Prediction.Score", prediction.Score, props);
-
-            }
-            catch
-            {
-                // avoid fail prediction due to telemetry record saving issues
-            }
         }
 
         [FunctionName("ping")]
