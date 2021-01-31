@@ -15,6 +15,7 @@ namespace Predictor
     {
         private string _environment;
         private string _aiKey;
+        private string _modelUri;
 
         private bool IsDevelopmentEnvironment => "Development".Equals(_environment, StringComparison.OrdinalIgnoreCase);
 
@@ -22,10 +23,23 @@ namespace Predictor
         {
             _environment = Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT");
             _aiKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
+            _modelUri = Environment.GetEnvironmentVariable("ML_MODEL_URI");
 
-            if (IsDevelopmentEnvironment) {
+            var predictionEngine = builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>();
+
+            if (IsDevelopmentEnvironment)
+            {
                 // Load From File
-                builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>().FromFile(modelName: "SentimentAnalysisModel", filePath: Path.Combine(Environment.CurrentDirectory, "model.zip"), watchForChanges: false);
+                predictionEngine.FromFile(modelName: "SentimentAnalysisModel", filePath: Path.Combine(Environment.CurrentDirectory, "model.zip"), watchForChanges: true);
+            }
+            else if (Uri.TryCreate(_modelUri, UriKind.RelativeOrAbsolute, out var _))
+            {
+                predictionEngine.FromUri(_modelUri);
+            }
+            else
+            {
+                Console.WriteLine($"{_environment} {_modelUri}");
+                throw new ApplicationException($"Invalid Model Uri. Environment={_environment} Uri={_modelUri}");
             }
 
             builder.Services.AddSingleton(sp =>
