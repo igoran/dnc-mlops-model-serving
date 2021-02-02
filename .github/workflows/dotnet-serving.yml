@@ -17,6 +17,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Print custom message
+      run: |
+        echo ${{ env.ML_MODEL_URI }}
+        echo ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
+        echo ${{ github.event.client_payload.message.ML_MODEL_URI }}
     - uses: actions/checkout@v2
       name: Checkout unshallow
       with:
