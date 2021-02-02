@@ -53,7 +53,9 @@ namespace Predictor
         [FunctionName("ping")]
         public IActionResult Ping([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ping")] HttpRequest req)
         {
-            return new OkObjectResult("ok");
+            var uri = Environment.GetEnvironmentVariable("ML_MODEL_URI") ?? string.Empty;
+
+            return new OkObjectResult($"Model Uri=\"{uri}\"");
         }
     }
 }
