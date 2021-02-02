@@ -15,7 +15,6 @@ jobs:
     - name: Pulumi - Setup CLI
       run: |
         curl https://get.pulumi.com | bash
-        echo "::add-path::$HOME/.pulumi/bin/"
     - uses: actions/checkout@v2
       name: Checkout unshallow
       with:
