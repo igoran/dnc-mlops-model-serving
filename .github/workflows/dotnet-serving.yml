@@ -1,5 +1,8 @@
 name: .NET
 
+env:
+  "ML_MODEL_URI": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip
+
 on:
   push:
     branches: [ main ]
@@ -8,9 +11,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
       name: Checkout unshallow
@@ -20,18 +21,6 @@ jobs:
       run: echo ::set-env name=GITHUB_SHA_SHORT::$(echo $GITHUB_SHA | cut -c 1-6)
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-    - name: Pulumi - Setup CLI
-      run: |
-        curl https://get.pulumi.com | bash
-        echo "::add-path::$HOME/.pulumi/bin/"
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-    - name: Pulumi - Init new project by current SHA commit
-      working-directory: ./infra
-      run: |
-        pulumi preview
-      env:
-        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
@@ -45,3 +34,23 @@ jobs:
       run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --configuration Release --no-build --verbosity normal
       env:
         ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
+    - name: Publish
+      run: dotnet publish ml/Predictor/Predictor.csproj --configuration Release     
+    - name: Pulumi - Setup CLI
+      run: |
+        curl https://get.pulumi.com | bash
+        echo "::add-path::$HOME/.pulumi/bin/"
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    - name: Pulumi - Init new project by current SHA commit
+      working-directory: ./infra
+      run: |
+        pulumi stack select lucamilan/infra/dev
+        pulumi config set azure:location westeurope
+        pulumi config set azure:clientId ${{ secrets.AZURE_CLIENT_ID }} 
+        pulumi config set azure:clientSecret ${{ secrets.AZURE_SECRET }} --secret  
+        pulumi config set azure:tenantId ${{ secrets.AZURE_TENANT_ID }}  
+        pulumi config set azure:subscriptionId ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        pulumi preview
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
