@@ -10,6 +10,9 @@ on:
   pull_request:
     branches: [ main ]
 
+  repository_dispatch:
+    types: [mlmodel-created]
+
 jobs:
   build:
     runs-on: ubuntu-latest
