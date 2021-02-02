@@ -50,7 +50,7 @@ namespace Predictor
             }
             else
             {
-                builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>().FromUri(Constants.ModelName, modelUri.ToString());
+                builder.Services.AddPredictionEnginePool<SentimentIssue, SentimentPrediction>().FromUri(Constants.ModelName,modelUri.ToString());
             }
         }
     }
