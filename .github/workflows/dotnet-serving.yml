@@ -34,6 +34,8 @@ jobs:
       run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --configuration Release --no-build --verbosity normal
       env:
         ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
+    - name: Publish
+      run: dotnet publish ml/Predictor/Predictor.csproj --configuration Release     
     - name: Pulumi - Setup CLI
       run: |
         curl https://get.pulumi.com | bash
