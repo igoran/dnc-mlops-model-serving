@@ -12,7 +12,7 @@ on:
     branches: [ main ]
 
   repository_dispatch:
-    types: [mlmodel-created]
+    types: [model-created]
 
 jobs:
   build:
