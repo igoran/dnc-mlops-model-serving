@@ -1,7 +1,6 @@
 name: .NET
 
 on:
-  workflow_run:
   push:
     branches: [ main ]
   pull_request:
@@ -17,6 +16,22 @@ jobs:
       name: Checkout unshallow
       with:
         fetch-depth: 0
+    - name: Set env variable for short SHA
+      run: echo ::set-env name=GITHUB_SHA_SHORT::$(echo $GITHUB_SHA | cut -c 1-6)
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    - name: Pulumi - Setup CLI
+      run: |
+        curl https://get.pulumi.com | bash
+        echo "::add-path::$HOME/.pulumi/bin/"
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    - name: Pulumi - Init new project by current SHA commit
+      working-directory: ./infra
+      run: |
+        pulumi preview
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
@@ -27,6 +42,6 @@ jobs:
     - name: Build
       run: dotnet build ml/ml.sln --configuration Release --no-restore      
     - name: Test
-      run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --no-build --verbosity normal
+      run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --configuration Release --no-build --verbosity normal
       env:
         ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
