@@ -18,22 +18,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Print custom message
+    - name: Print Payload Data
       run: |
-        echo ${{ env.ML_MODEL_URI }}
         echo ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
         echo ${{ github.event.client_payload.message.ML_MODEL_URI }}
       env:
-        ML_MODEL_VERSION: ${{ env.ML_MODEL_VERSION }}
-        ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
+        ML_MODEL_VERSION: ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
+        ML_MODEL_URI: ${{ github.event.client_payload.message.ML_MODEL_URI }}
     - uses: actions/checkout@v2
       name: Checkout unshallow
       with:
         fetch-depth: 0
-    - name: Set env variable for short SHA
-      run: echo ::set-env name=GITHUB_SHA_SHORT::$(echo $GITHUB_SHA | cut -c 1-6)
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
