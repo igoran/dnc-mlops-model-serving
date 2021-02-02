@@ -18,9 +18,14 @@ jobs:
         fetch-depth: 0
     - name: Set env variable for short SHA
       run: echo ::set-env name=GITHUB_SHA_SHORT::$(echo $GITHUB_SHA | cut -c 1-6)
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
     - name: Pulumi - Setup CLI
       run: |
         curl https://get.pulumi.com | bash
+        echo "::add-path::$HOME/.pulumi/bin/"
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
     - name: Pulumi - Init new project by current SHA commit
       working-directory: ./infra
       run: |
