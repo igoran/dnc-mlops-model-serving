@@ -26,6 +26,6 @@ jobs:
     - name: Build
       run: dotnet build ml/ml.sln --configuration Release --no-restore      
     - name: Test
-      run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --no-build --verbosity normal
+      run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --configuration Release --no-build --verbosity normal
       env:
         ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
