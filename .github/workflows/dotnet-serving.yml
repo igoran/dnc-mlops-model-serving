@@ -20,6 +20,19 @@ jobs:
       run: echo ::set-env name=GITHUB_SHA_SHORT::$(echo $GITHUB_SHA | cut -c 1-6)
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Install dependencies
+      run: dotnet restore
+      working-directory: ml
+    - name: Build
+      run: dotnet build ml/ml.sln --configuration Release --no-restore      
+    - name: Test
+      run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --configuration Release --no-build --verbosity normal
+      env:
+        ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
     - name: Pulumi - Setup CLI
       run: |
         curl https://get.pulumi.com | bash
@@ -38,16 +51,3 @@ jobs:
         pulumi preview
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 3.1.x
-    - name: Install dependencies
-      run: dotnet restore
-      working-directory: ml
-    - name: Build
-      run: dotnet build ml/ml.sln --configuration Release --no-restore      
-    - name: Test
-      run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --configuration Release --no-build --verbosity normal
-      env:
-        ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
