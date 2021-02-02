@@ -1,8 +1,8 @@
 name: .NET
 
 env:
-  "ML_MODEL_VERSION": "0.1.0-b8e1e1a"
-  "ML_MODEL_URI": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip
+  # "ML_MODEL_VERSION": "0.1.0-b8e1e1a"
+  # "ML_MODEL_URI": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip
   "PULUMI_STACK_NAME": igoran/infra/dev
 
 on:
@@ -23,6 +23,9 @@ jobs:
         echo ${{ env.ML_MODEL_URI }}
         echo ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
         echo ${{ github.event.client_payload.message.ML_MODEL_URI }}
+      env:
+        ML_MODEL_VERSION: ${{ env.ML_MODEL_VERSION }}
+        ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
     - uses: actions/checkout@v2
       name: Checkout unshallow
       with:
