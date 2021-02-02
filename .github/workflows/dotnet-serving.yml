@@ -1,7 +1,7 @@
 name: .NET
 
 env:
-  "ML_MODEL_URI": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip"
+  "ML_MODEL_URI": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip
 
 on:
   push:
