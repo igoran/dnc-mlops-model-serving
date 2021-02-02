@@ -1,5 +1,8 @@
 name: .NET
 
+env:
+  "ML_MODEL_URI": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip"
+
 on:
   push:
     branches: [ main ]
@@ -8,9 +11,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
       name: Checkout unshallow
