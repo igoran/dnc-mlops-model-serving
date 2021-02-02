@@ -1,0 +1,32 @@
+name: .NET
+
+on:
+  workflow_run:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout unshallow
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Install dependencies
+      run: dotnet restore
+      working-directory: ml
+    - name: Build
+      run: dotnet build ml/ml.sln --configuration Release --no-restore      
+    - name: Test
+      run: dotnet test ml/Predictor.Tests/Predictor.Tests.csproj --no-build --verbosity normal
+      env:
+        ML_MODEL_URI: ${{ env.ML_MODEL_URI }}
