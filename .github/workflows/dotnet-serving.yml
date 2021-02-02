@@ -2,6 +2,7 @@ name: .NET
 
 env:
   "ML_MODEL_URI": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip
+  "PULUMI_STACK_NAME": lucamilan/infra/dev
 
 on:
   push:
@@ -45,7 +46,7 @@ jobs:
     - name: Pulumi - Init new project by current SHA commit
       working-directory: ./infra
       run: |
-        pulumi stack select lucamilan/infra/dev
+        pulumi stack select ${{ env.PULUMI_STACK_NAME }}
         pulumi config set azure:location westeurope
         pulumi config set azure:clientId ${{ secrets.AZURE_CLIENT_ID }} 
         pulumi config set azure:clientSecret ${{ secrets.AZURE_SECRET }} --secret  
