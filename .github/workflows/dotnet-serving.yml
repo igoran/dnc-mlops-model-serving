@@ -23,7 +23,7 @@ jobs:
         echo ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
         echo ${{ github.event.client_payload.message.ML_MODEL_URI }}
       env:
-        ML_MODEL_VERSION: ${{ github.event.client_payload.message.ML_MODEL_VERSION:0.1.0-b8e1e1a }}
+        ML_MODEL_VERSION: ${{ github.event.client_payload.message.ML_MODEL_VERSION:-0.1.0-b8e1e1a }}
         ML_MODEL_URI: ${{ github.event.client_payload.message.ML_MODEL_URI:-https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip }}
     - uses: actions/checkout@v2
       name: Checkout unshallow
