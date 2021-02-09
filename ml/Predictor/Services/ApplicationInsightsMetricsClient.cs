@@ -5,14 +5,14 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Logging;
 using Predictor.Models;
 
-namespace Predictor
+namespace Predictor.Services
 {
-    public class ApplicationInsightsMetricsClient : IMetricsClient
+    public class ApplicationInsightsClient : IMetricsClient
     {
         private readonly TelemetryClient _telemetryClient;
         private readonly ILogger _logger;
 
-        public ApplicationInsightsMetricsClient(TelemetryConfiguration telemetryConfiguration, ILogger logger)
+        public ApplicationInsightsClient(TelemetryConfiguration telemetryConfiguration, ILogger logger)
         {
             _telemetryClient = new TelemetryClient(telemetryConfiguration);
             _telemetryClient.Context.Operation.Name = "AnalyzeModelResult";
@@ -32,6 +32,8 @@ namespace Predictor
                 _telemetryClient.TrackMetric("Prediction.Probability", prediction.Probability, props);
 
                 _telemetryClient.TrackMetric("Prediction.Score", prediction.Score, props);
+
+                _logger.LogInformation($"Metrics updated. Score: {prediction.Score}");
             }
             catch(Exception ex)
             {

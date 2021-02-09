@@ -1,12 +1,11 @@
 ﻿using System;
-using System.IO;
-using Microsoft.ApplicationInsights;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
+using Predictor.Services;
 
 namespace Predictor.Tests
 {

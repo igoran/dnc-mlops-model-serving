@@ -1,6 +1,6 @@
 ﻿using Predictor.Models;
 
-namespace Predictor
+namespace Predictor.Services
 {
     public interface IMetricsClient
     {

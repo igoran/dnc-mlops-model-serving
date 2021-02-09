@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ML;
 using Predictor;
 using Predictor.Models;
+using Predictor.Services;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -44,7 +45,7 @@ namespace Predictor
 
                 var logger = sp.GetRequiredService<ILogger>();
 
-                return new ApplicationInsightsMetricsClient(telemetryConfiguration, logger);
+                return new ApplicationInsightsClient(telemetryConfiguration, logger);
             });
 
             if (modelUri.IsLoopback)

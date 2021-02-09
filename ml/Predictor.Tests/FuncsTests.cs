@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ML;
 using Newtonsoft.Json;
 using Predictor.Models;
+using Predictor.Services;
 using Shouldly;
 using Xunit;
 

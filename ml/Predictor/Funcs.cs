@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ML;
 using Newtonsoft.Json;
 using Predictor.Models;
+using Predictor.Services;
 
 namespace Predictor
 {
