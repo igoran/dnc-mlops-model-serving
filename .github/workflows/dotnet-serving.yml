@@ -21,7 +21,7 @@ jobs:
     - name: Print Payload Data
       run: |
         echo ${ github.event.client_payload.message.ML_MODEL_VERSION:-ML_MODEL_VERSION }
-        echo ${ github.event.client_payload.message.ML_MODEL_URI:-ML_MODEL_U}
+        echo ${ github.event.client_payload.message.ML_MODEL_URI:-ML_MODEL_URI}
       env:
         ML_MODEL_VERSION: ${ github.event.client_payload.message.ML_MODEL_VERSION:-ML_MODEL_VERSION }
         ML_MODEL_URI: ${ github.event.client_payload.message.ML_MODEL_URI:-ML_MODEL_URI }
