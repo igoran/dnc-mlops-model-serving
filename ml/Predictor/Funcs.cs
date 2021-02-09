@@ -28,8 +28,6 @@ namespace Predictor
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "predict")] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
             //Parse HTTP Request Body
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var sentimentIssue = JsonConvert.DeserializeObject<SentimentIssue>(requestBody);

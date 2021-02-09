@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ML;
 using Predictor;
 using Predictor.Models;
@@ -41,7 +42,9 @@ namespace Predictor
 
                 telemetryConfiguration.TelemetryInitializers.Add(new OperationCorrelationTelemetryInitializer());
 
-                return new ApplicationInsightsMetricsClient(telemetryConfiguration);
+                var logger = sp.GetRequiredService<ILogger>();
+
+                return new ApplicationInsightsMetricsClient(telemetryConfiguration, logger);
             });
 
             if (modelUri.IsLoopback)
