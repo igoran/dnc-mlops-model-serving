@@ -23,8 +23,8 @@ jobs:
         echo ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
         echo ${{ github.event.client_payload.message.ML_MODEL_URI }}
       env:
-        ML_MODEL_VERSION: ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
-        ML_MODEL_URI: ${{ github.event.client_payload.message.ML_MODEL_URI }}
+        ML_MODEL_VERSION: ${{ github.event.client_payload.message.ML_MODEL_VERSION:=ML_MODEL_VERSION }}
+        ML_MODEL_URI: ${{ github.event.client_payload.message.ML_MODEL_URI:=ML_MODEL_URI }}
     - uses: actions/checkout@v2
       name: Checkout unshallow
       with:
