@@ -77,8 +77,12 @@ class MyStack : Stack
         });
 
         Endpoint = Output.Format($"https://{app.DefaultHostname}/api/ping");
+
+        AppInsights = appInsights.InstrumentationKey;
     }
 
     [Output]
     public Output<string> Endpoint { get; set; }
+    [Output]
+    public Output<string> AppInsights { get; set; }
 }
