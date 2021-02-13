@@ -50,7 +50,7 @@ jobs:
         echo "::add-path::$HOME/.pulumi/bin/"
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-    - name: Pulumi - Init new project by current SHA commit
+    - name: Pulumi - Provisioning Azure Cloud Resources
       working-directory: ./infra
       run: |
         pulumi stack select ${{ env.PULUMI_STACK_NAME }} --non-interactive --create
