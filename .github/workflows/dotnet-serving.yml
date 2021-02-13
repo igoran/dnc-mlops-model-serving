@@ -66,5 +66,4 @@ jobs:
       working-directory: ./tests
       run: |
         echo 'Initializing Smoke Tests on the Azure Function'
-        sh chmod +x smoke.sh
         ./smoke_test.sh
