@@ -1,11 +1,11 @@
 #!/bin/bash
 
-. tests/smoke.sh
+. smoke.sh
 
 TIME_OUT=300
 TIME_OUT_COUNT=0
 PULUMI_STACK_NAME="igoran/infra/dev"
-PULUMI_CWD="infra/"
+PULUMI_CWD="../infra/"
 SMOKE_DOMAIN=$(pulumi stack --stack $PULUMI_STACK_NAME --cwd $PULUMI_CWD output Endpoint)
 SMOKE_URL="https://$SMOKE_DOMAIN/smoke"
 
