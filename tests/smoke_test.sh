@@ -2,11 +2,13 @@
 
 . smoke.sh
 
-TIME_OUT=300
+TIME_OUT=60
 TIME_OUT_COUNT=0
 PULUMI_CWD="../infra/"
 SMOKE_DOMAIN=$(pulumi stack --stack $PULUMI_STACK_NAME --cwd $PULUMI_CWD output Endpoint)
-SMOKE_URL="$SMOKE_DOMAIN/smoke"
+SMOKE_URL="$SMOKE_DOMAIN/api/smoke"
+
+echo "Start smoke test against on host $SMOKE_URL"
 
 while true
 do
