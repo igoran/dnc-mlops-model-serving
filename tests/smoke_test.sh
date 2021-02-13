@@ -1,0 +1,30 @@
+#!/bin/bash
+
+. tests/smoke.sh
+
+TIME_OUT=300
+TIME_OUT_COUNT=0
+PULUMI_STACK_NAME="igoran/infra/dev"
+PULUMI_CWD="infra/"
+SMOKE_DOMAIN=$(pulumi stack --stack $PULUMI_STACK_NAME --cwd $PULUMI_CWD output Endpoint)
+SMOKE_URL="https://$SMOKE_DOMAIN/smoke"
+
+while true
+do
+  STATUS=$(curl -s -o /dev/null -w '%{http_code}' $SMOKE_URL)
+  if [ $STATUS -eq 200 ]; then
+    smoke_url_ok $SMOKE_URL
+    smoke_assert_body "Positive"
+    smoke_report
+    echo "\n\n"
+    echo 'Smoke Tests Successfully Completed.'
+    break
+  elif [[ $TIME_OUT_COUNT -gt $TIME_OUT ]]; then
+    echo "Process has Timed out! Elapsed Timeout Count.. $TIME_OUT_COUNT"
+    exit 1
+  else
+    echo "Checking Status on host $SMOKE... $TIME_OUT_COUNT seconds elapsed"
+    TIME_OUT_COUNT=$((TIME_OUT_COUNT+10))
+  fi
+  sleep 10
+done
