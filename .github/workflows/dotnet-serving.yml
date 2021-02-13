@@ -62,8 +62,12 @@ jobs:
         pulumi up --non-interactive --yes
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+    - name: Make smoke scripts executable
+      run: |
+        chmod +x ./smoke.sh
+        chmod +x ./smoke_test.sh
     - name: Run Smoke Test against Azure Function
       working-directory: ./tests
       run: |
         echo 'Initializing Smoke Tests on the Azure Function'
-        sh ./smoke_test.sh
+        ./smoke_test.sh
