@@ -30,6 +30,19 @@ namespace Predictor.Tests
         }
 
         [Fact]
+        public void Should_get_ok_from_smoke_test()
+        {
+            // arrange
+            var req = new DefaultHttpRequest(new DefaultHttpContext());
+
+            // act
+            var result = _sut.Smoke(req, NullLogger.Instance);
+
+            // assert
+            result.ShouldBeOfType<OkObjectResult>();
+        }
+
+        [Fact]
         public async Task Should_get_bad_result_object_is_sentiment_text_is_null_or_empty()
         {
             // arrange

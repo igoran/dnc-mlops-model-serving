@@ -49,6 +49,30 @@ namespace Predictor
             return new OkObjectResult(sentiment);
         }
 
+        [FunctionName("predictorSmoke")]
+        public IActionResult Smoke([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "smoke")] HttpRequest req, ILogger log)
+        {
+            try
+            {
+                var sentimentIssue = new SentimentIssue() { SentimentText = "This was a great place!" };
+
+                //Make Prediction   
+                var sentimentPrediction = _predictionEnginePool.Predict(modelName: Constants.ModelName, example: sentimentIssue);
+
+                //Convert prediction to string
+                string sentiment = Convert.ToBoolean(sentimentPrediction.Prediction) ? "Positive" : "Negative";
+
+                //Return Prediction
+                return new OkObjectResult(sentiment);
+            }
+            catch (Exception ex)
+            {
+                log.LogCritical(ex.ToString());
+            }
+
+            return new BadRequestResult();
+        }
+
         [FunctionName("ping")]
         public IActionResult Ping([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ping")] HttpRequest req)
         {
