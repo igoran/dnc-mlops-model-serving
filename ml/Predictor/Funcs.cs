@@ -43,7 +43,7 @@ namespace Predictor
             //Convert prediction to string
             string sentiment = Convert.ToBoolean(sentimentPrediction.Prediction) ? "Positive" : "Negative";
 
-            _telemetryClient.Track(sentimentPrediction, sentimentIssue);
+            _telemetryClient.Track(sentimentPrediction, sentimentIssue, log);
 
             //Return Prediction
             return new OkObjectResult(sentiment);

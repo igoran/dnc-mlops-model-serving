@@ -43,9 +43,7 @@ namespace Predictor
 
                 telemetryConfiguration.TelemetryInitializers.Add(new OperationCorrelationTelemetryInitializer());
 
-                var logger = sp.GetRequiredService<ILogger>();
-
-                return new ApplicationInsightsClient(telemetryConfiguration, logger);
+                return new ApplicationInsightsClient(telemetryConfiguration);
             });
 
             if (modelUri.IsLoopback)

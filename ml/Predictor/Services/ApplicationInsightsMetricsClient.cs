@@ -10,16 +10,14 @@ namespace Predictor.Services
     public class ApplicationInsightsClient : IMetricsClient
     {
         private readonly TelemetryClient _telemetryClient;
-        private readonly ILogger _logger;
 
-        public ApplicationInsightsClient(TelemetryConfiguration telemetryConfiguration, ILogger logger)
+        public ApplicationInsightsClient(TelemetryConfiguration telemetryConfiguration)
         {
             _telemetryClient = new TelemetryClient(telemetryConfiguration);
             _telemetryClient.Context.Operation.Name = "AnalyzeModelResult";
-            _logger = logger;
         }
 
-        public void Track(SentimentPrediction prediction, SentimentIssue data)
+        public void Track(SentimentPrediction prediction, SentimentIssue data, ILogger logger)
         {
             try
             {
@@ -33,12 +31,12 @@ namespace Predictor.Services
 
                 _telemetryClient.TrackMetric("Prediction.Score", prediction.Score, props);
 
-                _logger.LogInformation($"Metrics updated. Score: {prediction.Score}");
+                logger?.LogInformation($"Metrics updated. Score: {prediction.Score}");
             }
             catch(Exception ex)
             {
                 // avoid fail prediction due to telemetry record saving issues
-                _logger.LogError(ex, nameof(Track));
+                logger?.LogError(ex, nameof(Track));
             }
         }
     }
