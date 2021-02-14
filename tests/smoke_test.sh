@@ -8,16 +8,15 @@ PULUMI_CWD="../infra/"
 SMOKE_DOMAIN=$(pulumi stack --stack $PULUMI_STACK_NAME --cwd $PULUMI_CWD output Endpoint)
 SMOKE_URL="$SMOKE_DOMAIN/api/smoke"
 
-echo "Start smoke test against on host $SMOKE_URL"
+echo "Start smoke test against host $SMOKE_URL"
 
 while true
 do
   STATUS=$(curl -s -o /dev/null -w '%{http_code}' $SMOKE_URL)
   if [ $STATUS -eq 200 ]; then
     smoke_url_ok $SMOKE_URL
-    smoke_assert_body "Positive"
+    smoke_assert_body "Positive-$ML_MODEL_URI"
     smoke_report
-    echo "\n\n"
     echo 'Smoke Tests Successfully Completed.'
     break
   elif [[ $TIME_OUT_COUNT -gt $TIME_OUT ]]; then
