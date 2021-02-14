@@ -18,13 +18,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Print Payload Data
-      run: |
-        echo ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
-        echo ${{ github.event.client_payload.message.ML_MODEL_URI}}
+    - name: Assign Payload Data
+      if: ${{ github.event.client_payload.message.ML_MODEL_VERSION != '' }}
       env:
-        ML_MODEL_VERSION: ${ github.event.client_payload.message.ML_MODEL_VERSION:-ML_MODEL_VERSION }
-        ML_MODEL_URI: ${ github.event.client_payload.message.ML_MODEL_URI:-ML_MODEL_URI }
+        ML_MODEL_VERSION: ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
+        ML_MODEL_URI: ${{ github.event.client_payload.message.ML_MODEL_URI }}
+    - name: Print Payload Data      
+      run: |
+        echo ${{ env.ML_MODEL_VERSION }}
+        echo ${{ env.ML_MODEL_URI }}
     - uses: actions/checkout@v2
       name: Checkout unshallow
       with:
