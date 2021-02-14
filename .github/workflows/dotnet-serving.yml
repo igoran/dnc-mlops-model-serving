@@ -1,8 +1,8 @@
 name: .NET
 
 env:
-  "ML_MODEL_VERSION_DEFAULT": "0.1.0-b8e1e1a"
-  "ML_MODEL_URI_DEFAULT": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip
+  "ML_MODEL_VERSION": "0.1.0-b8e1e1a"
+  "ML_MODEL_URI": https://github.com/igoran/dnc-mlops-model-training/releases/download/0.1.0-b8e1e1a/0.1.0-b8e1e1a.zip
   "PULUMI_STACK_NAME": igoran/infra/dev
 
 on:
@@ -18,22 +18,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Assign default values
-      run: |
-        echo ${{ env.ML_MODEL_VERSION_DEFAULT }}
-        echo ${{ env.ML_MODEL_URI_DEFAULT }}
-      env:
-        ML_MODEL_VERSION: ${{ env.ML_MODEL_VERSION_DEFAULT }}
-        ML_MODEL_URI_DEFAULT: ${{ env.ML_MODEL_URI_DEFAULT }}
     - name: Assign Payload Data
       if: ${{ github.event.client_payload.message.ML_MODEL_VERSION != '' }}
       run: |
+        echo "ML_MODEL_VERSION=${{ github.event.client_payload.message.ML_MODEL_VERSION }}" >> $GITHUB_ENV
+        echo "ML_MODEL_URI=${{ github.event.client_payload.message.ML_MODEL_URI }}" >> $GITHUB_ENV
         echo "Assigning ML_MODEL_VERSION to ${{ github.event.client_payload.message.ML_MODEL_VERSION }}"
         echo "Assigning ML_MODEL_URI to ${{ github.event.client_payload.message.ML_MODEL_URI }}"
-      env:
-        ML_MODEL_VERSION: ${{ github.event.client_payload.message.ML_MODEL_VERSION }}
-        ML_MODEL_URI: ${{ github.event.client_payload.message.ML_MODEL_URI }}        
-    - name: Print Payload Data      
+    - name: Print Payload Data
       run: |
         echo ${{ env.ML_MODEL_VERSION }}
         echo ${{ env.ML_MODEL_URI }}
