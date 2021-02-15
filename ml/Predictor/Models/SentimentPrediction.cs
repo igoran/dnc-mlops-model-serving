@@ -13,7 +13,7 @@ namespace Predictor.Models
 
         public override string ToString()
         {
-            return $"\"{SentimentText}\" Positive: '{Prediction}' Score: {Score}";
+            return $"\"{SentimentText}\" Positive: '{Prediction}' {nameof(Score)}: {Score} {nameof(Probability)}: {Probability}";
         }
     }
 }

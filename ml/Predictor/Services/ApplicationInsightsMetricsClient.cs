@@ -11,20 +11,22 @@ namespace Predictor.Services
     {
         private readonly TelemetryClient _telemetryClient;
 
-        public ApplicationInsightsClient(TelemetryConfiguration telemetryConfiguration)
+        public ApplicationInsightsClient(TelemetryConfiguration telemetryConfiguration, Uri modelUri)
         {
             _telemetryClient = new TelemetryClient(telemetryConfiguration);
-            _telemetryClient.Context.Operation.Name = "AnalyzeModelResult";
+            _telemetryClient.Context.Operation.Name = modelUri.ToString();
         }
 
         public void Track(SentimentPrediction prediction, SentimentIssue data, ILogger logger)
         {
             try
             {
+                string sentimentText = data.SentimentText;
+
                 var props = new Dictionary<string, string>
                 {
                     { "model_name", Constants.ModelName },
-                    { "text", data.SentimentText },
+                    { "text", sentimentText },
                 };
 
                 _telemetryClient.TrackMetric("Prediction.Probability", prediction.Probability, props);

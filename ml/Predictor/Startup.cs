@@ -43,7 +43,7 @@ namespace Predictor
 
                 telemetryConfiguration.TelemetryInitializers.Add(new OperationCorrelationTelemetryInitializer());
 
-                return new ApplicationInsightsClient(telemetryConfiguration);
+                return new ApplicationInsightsClient(telemetryConfiguration, modelUri);
             });
 
             if (modelUri.IsLoopback)

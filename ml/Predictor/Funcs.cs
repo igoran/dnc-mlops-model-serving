@@ -26,8 +26,7 @@ namespace Predictor
 
         [FunctionName("predictor")]
         public async Task<IActionResult> Predict(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "predict")] HttpRequest req,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "predict")] HttpRequest req, ILogger log)
         {
             //Parse HTTP Request Body
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -47,6 +46,28 @@ namespace Predictor
 
             //Return Prediction
             return new OkObjectResult(sentiment);
+        }
+
+        [FunctionName("predictorFull")]
+        public async Task<IActionResult> PredictFull(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "predict-full")] HttpRequest req, ILogger log)
+        {
+            //Parse HTTP Request Body
+            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var sentimentIssue = JsonConvert.DeserializeObject<SentimentIssue>(requestBody);
+
+            if (string.IsNullOrEmpty(sentimentIssue?.SentimentText))
+            {
+                return new BadRequestResult();
+            }
+
+            //Make Prediction   
+            var sentimentPrediction = _predictionEnginePool.Predict(modelName: Constants.ModelName, example: sentimentIssue);
+
+            _telemetryClient.Track(sentimentPrediction, sentimentIssue, log);
+
+            //Return Prediction
+            return new OkObjectResult(sentimentPrediction?.ToString());
         }
 
         [FunctionName("predictorSmoke")]
