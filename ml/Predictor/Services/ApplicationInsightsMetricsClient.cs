@@ -26,6 +26,8 @@ namespace Predictor.Services
             {
                 string sentimentText = data.SentimentText;
 
+                logger?.LogInformation($"{_telemetryClient.Context.Operation.Name} {sentimentText} is {prediction.Sentiment}", nameof(Track));
+
                 var props = new Dictionary<string, string>
                 {
                     { "model_name", Constants.ModelName },
