@@ -20,24 +20,22 @@ namespace Predictor.Services
             _modelUri = modelUri;
         }
 
-        public void Track(SentimentPrediction prediction, SentimentIssue data, ILogger logger)
+        public void Track(SentimentPrediction output, SentimentIssue input, ILogger logger)
         {
             try
             {
-                string sentimentText = data.SentimentText;
-
-                logger?.LogInformation($"{_telemetryClient.Context.Operation.Name} {sentimentText} is {prediction.Sentiment}", nameof(Track));
+                string sentimentText = input.SentimentText;
 
                 var props = new Dictionary<string, string>
                 {
                     { "model_uri", _modelUri?.ToString() },
-                    { "prediction_response", prediction.Sentiment ? "Positive" : "Negative" },
+                    { "prediction_response", output.Prediction ? "Positive" : "Negative" },
                     { "prediction_text", sentimentText },
                 };
 
-                _telemetryClient.TrackMetric("Prediction.Probability", prediction.Probability, props);
+                _telemetryClient.TrackMetric("Prediction.Probability", output.Probability, props);
 
-                _telemetryClient.TrackMetric("Prediction.Score", prediction.Score, props);
+                _telemetryClient.TrackMetric("Prediction.Score", output.Score, props);
             }
             catch(Exception ex)
             {
