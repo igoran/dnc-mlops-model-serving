@@ -30,13 +30,10 @@ namespace Predictor.Services
 
                 var props = new Dictionary<string, string>
                 {
-                    { "model_name", Constants.ModelName },
-                    { "model_version", _modelUri?.Segments?.LastOrDefault()?.ToString() },
                     { "model_uri", _modelUri?.ToString() },
-                    { "text", sentimentText },
+                    { "prediction_response", prediction.Sentiment ? "Positive" : "Negative" },
+                    { "prediction_text", sentimentText },
                 };
-
-                _telemetryClient.TrackMetric("Prediction.Response", prediction.Sentiment ? 1 : 0, props);
 
                 _telemetryClient.TrackMetric("Prediction.Probability", prediction.Probability, props);
 
