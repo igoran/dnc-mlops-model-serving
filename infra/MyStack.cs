@@ -68,6 +68,7 @@ class MyStack : Stack
             {
                 {"runtime", "dotnet"},
                 {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
+                {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
                 {"ML_MODEL_URI", MlModelVersion},
                 {"APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey}
             },
