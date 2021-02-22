@@ -81,9 +81,10 @@ class MyStack : Stack
                 {
                     AllowedOrigins = new InputList<string>
                         {
-                            "http://localhost:5500/",
-                            "http://localhost/"
-                        }
+                            "http://localhost:5500",
+                            "http://localhost"
+                        },
+                    SupportCredentials = true
                 }
             },
             StorageAccountName = storageAccount.Name,
