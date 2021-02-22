@@ -21,7 +21,7 @@ class MyStack : Stack
 
         var currentStack = new StackReference($"igoran/{Deployment.Instance.ProjectName}/{Deployment.Instance.StackName}");
 
-        var endpoint = currentStack.GetOutput("Endpoint")?.Apply(_ => _?.ToString()); ;
+        string endpoint = (string)currentStack.RequireValueAsync("Endpoint").GetAwaiter().GetResult();
 
         Console.WriteLine($"Current endpoint: {endpoint}");
 
