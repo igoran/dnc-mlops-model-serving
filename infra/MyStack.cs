@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using Pulumi;
 using Pulumi.Azure.AppInsights;
@@ -13,17 +14,38 @@ class MyStack : Stack
     public string StackSuffix { get; }
     public string MlModelVersion { get; }
 
+    public string GetModelVersionForProductionSlot()
+    {
+        var currentStack = new StackReference($"igoran/{Deployment.Instance.ProjectName}/{Deployment.Instance.StackName}");
+
+        var endpoint = (string)currentStack.RequireValueAsync("Endpoint").GetAwaiter().GetResult();
+
+        if (string.IsNullOrEmpty(endpoint))
+            return MlModelVersion;
+
+        var uri = new UriBuilder(endpoint)
+        {
+            Path = "api/ping"
+        }.ToString();
+
+        using var client = new HttpClient();
+
+        var response = client.GetAsync(uri).GetAwaiter().GetResult();
+
+        response.EnsureSuccessStatusCode();
+
+        var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+        Console.WriteLine($"Response from {endpoint}: {content}");
+
+        return "";
+    }
+
     public MyStack()
     {
         ProjectStack = Deployment.Instance.ProjectName + "-" + Deployment.Instance.StackName;
         StackSuffix = Regex.Replace(Deployment.Instance.StackName, "[^a-z0-9]", string.Empty, RegexOptions.IgnoreCase);
         MlModelVersion = System.Environment.GetEnvironmentVariable("ML_MODEL_URI") ?? string.Empty;
-
-        var currentStack = new StackReference($"igoran/{Deployment.Instance.ProjectName}/{Deployment.Instance.StackName}");
-
-        string endpoint = (string)currentStack.RequireValueAsync("Endpoint").GetAwaiter().GetResult();
-
-        Console.WriteLine($"Current endpoint: {endpoint}");
 
         var resourceGroup = new ResourceGroup(ProjectStack);
 
@@ -66,6 +88,8 @@ class MyStack : Stack
             ResourceGroupName = resourceGroup.Name,
             ApplicationType = "web"
         });
+
+        GetModelVersionForProductionSlot();
 
         var app = new FunctionApp("fxapp" + StackSuffix.ToLowerInvariant(), new FunctionAppArgs
         {
@@ -129,12 +153,16 @@ class MyStack : Stack
 
         StorageConnectionString = Output.Format($"{storageAccount.PrimaryConnectionString}");
 
-        Endpoint = Output.Format($"https://{stagingSlot.DefaultHostname}");
+        StaginEndpoint = Output.Format($"https://{stagingSlot.DefaultHostname}");
+
+        Endpoint = Output.Format($"https://{app.DefaultHostname}");
     }
 
 
     [Output]
     public Output<string> StorageConnectionString { get; set; }
+    [Output]
+    public Output<string> StaginEndpoint { get; set; }
     [Output]
     public Output<string> Endpoint { get; set; }
 }
