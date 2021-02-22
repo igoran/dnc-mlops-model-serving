@@ -19,7 +19,7 @@ class MyStack : Stack
         StackSuffix = Regex.Replace(Deployment.Instance.StackName, "[^a-z0-9]", string.Empty, RegexOptions.IgnoreCase);
         MlModelVersion = System.Environment.GetEnvironmentVariable("ML_MODEL_URI") ?? string.Empty;
 
-        var currentStack = new StackReference(Deployment.Instance.StackName);
+        var currentStack = new StackReference($"igoran/{Deployment.Instance.ProjectName}/{Deployment.Instance.StackName}");
 
         var endpoint = currentStack.GetOutput("Endpoint");
 
