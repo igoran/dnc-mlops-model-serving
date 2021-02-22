@@ -12,40 +12,43 @@ class MyStack : Stack
 {
     public string ProjectStack { get; }
     public string StackSuffix { get; }
-    public string MlModelVersion { get; }
 
-    public string GetModelVersionForProductionSlot()
+    public string? GetModelVersionForProductionSlot()
     {
         var currentStack = new StackReference($"igoran/{Deployment.Instance.ProjectName}/{Deployment.Instance.StackName}");
 
-        var endpoint = (string)currentStack.RequireValueAsync("Endpoint").GetAwaiter().GetResult();
+        var modelVersion = (string)currentStack.RequireValueAsync(nameof(ModelVersion)).GetAwaiter().GetResult();
 
-        if (string.IsNullOrEmpty(endpoint))
-            return MlModelVersion;
-
-        var uri = new UriBuilder(endpoint)
+        if (string.IsNullOrEmpty(modelVersion))
         {
-            Path = "api/ping"
-        }.ToString();
+            return null;
+        }
 
-        using var client = new HttpClient();
+        return modelVersion;
+    }
 
-        var response = client.GetAsync(uri).GetAwaiter().GetResult();
+    public string GetModelVersionForStagingSlot()
+    {
+        var modelVersion = System.Environment.GetEnvironmentVariable("ML_MODEL_URI");
 
-        response.EnsureSuccessStatusCode();
+        if (string.IsNullOrEmpty(modelVersion))
+        {
+            throw new ArgumentNullException("ML_MODEL_URI");
+        }
 
-        var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-        Console.WriteLine($"Response from {endpoint}: {content}");
-
-        return "";
+        return modelVersion;
     }
 
     public MyStack()
     {
         ProjectStack = Deployment.Instance.ProjectName + "-" + Deployment.Instance.StackName;
         StackSuffix = Regex.Replace(Deployment.Instance.StackName, "[^a-z0-9]", string.Empty, RegexOptions.IgnoreCase);
-        MlModelVersion = System.Environment.GetEnvironmentVariable("ML_MODEL_URI") ?? string.Empty;
+
+        var stagingModelVersion = GetModelVersionForStagingSlot();
+
+        var productionModelVersion = GetModelVersionForProductionSlot() ?? stagingModelVersion;
+
+        Console.WriteLine($"ML Model Version. Staging: {stagingModelVersion} Prod: {productionModelVersion}");
 
         var resourceGroup = new ResourceGroup(ProjectStack);
 
@@ -89,19 +92,16 @@ class MyStack : Stack
             ApplicationType = "web"
         });
 
-        GetModelVersionForProductionSlot();
-
         var app = new FunctionApp("fxapp" + StackSuffix.ToLowerInvariant(), new FunctionAppArgs
         {
             ResourceGroupName = resourceGroup.Name,
             AppServicePlanId = appServicePlan.Id,
             AppSettings =
             {
-                {"DEP_SLOT", $"normal-{DateTime.Now:u}"},
                 {"runtime", "dotnet"},
                 {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
                 {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
-                {"ML_MODEL_URI", MlModelVersion},
+                {"ML_MODEL_URI", productionModelVersion},
                 {"APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey}
             },
             SiteConfig = new FunctionAppSiteConfigArgs
@@ -142,11 +142,10 @@ class MyStack : Stack
             },
             AppSettings =
             {
-                {"DEP_SLOT", $"staging-{DateTime.Now:u}"},
                 {"runtime", "dotnet"},
                 {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
                 {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
-                {"ML_MODEL_URI", MlModelVersion},
+                {"ML_MODEL_URI", stagingModelVersion},
                 {"APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey}
             },
         });
@@ -156,8 +155,9 @@ class MyStack : Stack
         StaginEndpoint = Output.Format($"https://{stagingSlot.DefaultHostname}");
 
         Endpoint = Output.Format($"https://{app.DefaultHostname}");
-    }
 
+        ModelVersion = Output.Format($"{productionModelVersion}");
+    }
 
     [Output]
     public Output<string> StorageConnectionString { get; set; }
@@ -165,4 +165,6 @@ class MyStack : Stack
     public Output<string> StaginEndpoint { get; set; }
     [Output]
     public Output<string> Endpoint { get; set; }
+    [Output]
+    public Output<string> ModelVersion { get; set; }
 }
