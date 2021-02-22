@@ -81,8 +81,7 @@ class MyStack : Stack
                 {
                     AllowedOrigins = new InputList<string>
                         {
-                            "http://localhost:5500",
-                            "http://localhost"
+                            "http://localhost:5500"
                         },
                     SupportCredentials = true
                 }
@@ -92,9 +91,44 @@ class MyStack : Stack
             Version = "~3"
         });
 
-        Endpoint = Output.Format($"https://{app.DefaultHostname}");
+        var stagingSlot = new FunctionAppSlot("staging", new FunctionAppSlotArgs
+        {
+            Name = "staging",
+            ResourceGroupName = resourceGroup.Name,
+            AppServicePlanId = appServicePlan.Id,
+            StorageAccountName = storageAccount.Name,
+            StorageAccountAccessKey = storageAccount.PrimaryAccessKey,
+            FunctionAppName = app.Name,
+            Version = "~3",
+            SiteConfig = new FunctionAppSlotSiteConfigArgs
+            {
+                Cors = new FunctionAppSlotSiteConfigCorsArgs
+                {
+                    AllowedOrigins = new InputList<string>
+                        {
+                            "http://localhost:5500"
+                        },
+                    SupportCredentials = true
+                }
+            },
+            AppSettings =
+            {
+                {"runtime", "dotnet"},
+                {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
+                {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
+                {"ML_MODEL_URI", MlModelVersion},
+                {"APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey}
+            },
+        });
+
+        StorageConnectionString = Output.Format($"{storageAccount.PrimaryConnectionString}");
+
+        Endpoint = Output.Format($"https://{stagingSlot.DefaultHostname}");
     }
 
+
+    [Output]
+    public Output<string> StorageConnectionString { get; set; }
     [Output]
     public Output<string> Endpoint { get; set; }
 }
