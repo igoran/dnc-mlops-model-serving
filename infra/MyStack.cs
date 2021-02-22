@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
@@ -69,11 +70,11 @@ class MyStack : Stack
             AppServicePlanId = appServicePlan.Id,
             AppSettings =
             {
+                {"DEP_SLOT", $"normal-{DateTime.Now:u}"},
                 {"runtime", "dotnet"},
                 {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
                 {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
                 {"ML_MODEL_URI", MlModelVersion},
-                {"DEP_SLOT", "normal"},
                 {"APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey}
             },
             SiteConfig = new FunctionAppSiteConfigArgs
@@ -114,7 +115,7 @@ class MyStack : Stack
             },
             AppSettings =
             {
-                {"DEP_SLOT", "staging"},
+                {"DEP_SLOT", $"staging-{DateTime.Now:u}"},
                 {"runtime", "dotnet"},
                 {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
                 {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
