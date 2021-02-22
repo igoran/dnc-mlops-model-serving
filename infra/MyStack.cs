@@ -73,6 +73,7 @@ class MyStack : Stack
                 {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
                 {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
                 {"ML_MODEL_URI", MlModelVersion},
+                {"DEP_SLOT", "normal"},
                 {"APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey}
             },
             SiteConfig = new FunctionAppSiteConfigArgs
@@ -113,6 +114,7 @@ class MyStack : Stack
             },
             AppSettings =
             {
+                {"DEP_SLOT", "staging"},
                 {"runtime", "dotnet"},
                 {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
                 {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
