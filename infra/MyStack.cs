@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Pulumi;
 using Pulumi.Azure.AppInsights;
 using Pulumi.Azure.AppService;
 using Pulumi.Azure.AppService.Inputs;
-using Pulumi.Azure.AppService.Outputs;
 using Pulumi.Azure.Core;
 using Pulumi.Azure.Storage;
 
@@ -21,6 +18,12 @@ class MyStack : Stack
         ProjectStack = Deployment.Instance.ProjectName + "-" + Deployment.Instance.StackName;
         StackSuffix = Regex.Replace(Deployment.Instance.StackName, "[^a-z0-9]", string.Empty, RegexOptions.IgnoreCase);
         MlModelVersion = System.Environment.GetEnvironmentVariable("ML_MODEL_URI") ?? string.Empty;
+
+        var currentStack = new StackReference(Deployment.Instance.StackName);
+
+        var endpoint = currentStack.GetOutput("Endpoint");
+
+        Console.WriteLine($"Current endpoint: {endpoint}");
 
         var resourceGroup = new ResourceGroup(ProjectStack);
 
