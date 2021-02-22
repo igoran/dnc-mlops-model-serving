@@ -1,8 +1,11 @@
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Pulumi;
 using Pulumi.Azure.AppInsights;
 using Pulumi.Azure.AppService;
 using Pulumi.Azure.AppService.Inputs;
+using Pulumi.Azure.AppService.Outputs;
 using Pulumi.Azure.Core;
 using Pulumi.Azure.Storage;
 
@@ -71,6 +74,17 @@ class MyStack : Stack
                 {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
                 {"ML_MODEL_URI", MlModelVersion},
                 {"APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey}
+            },
+            SiteConfig = new FunctionAppSiteConfigArgs
+            {
+                Cors = new FunctionAppSiteConfigCorsArgs
+                {
+                    AllowedOrigins = new InputList<string>
+                        {
+                            "http://localhost:5500/",
+                            "http://localhost/"
+                        }
+                }
             },
             StorageAccountName = storageAccount.Name,
             StorageAccountAccessKey = storageAccount.PrimaryAccessKey,
