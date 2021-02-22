@@ -17,12 +17,7 @@ class MyStack : Stack
     {
         var currentStack = new StackReference($"igoran/{Deployment.Instance.ProjectName}/{Deployment.Instance.StackName}");
 
-        var modelVersion = (string)currentStack.RequireValueAsync(nameof(ModelVersion)).GetAwaiter().GetResult();
-
-        if (string.IsNullOrEmpty(modelVersion))
-        {
-            return null;
-        }
+        var modelVersion = (string?) currentStack.GetValueAsync(nameof(ModelVersion)).GetAwaiter().GetResult();
 
         return modelVersion;
     }
@@ -33,7 +28,7 @@ class MyStack : Stack
 
         if (string.IsNullOrEmpty(modelVersion))
         {
-            throw new ArgumentNullException("ML_MODEL_URI");
+            throw new ArgumentNullException("ML_MODEL_URI","Null or empty Model Version");
         }
 
         return modelVersion;
