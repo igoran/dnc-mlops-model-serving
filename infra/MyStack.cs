@@ -17,13 +17,16 @@ class MyStack : Stack
     {
         var currentStack = new StackReference($"igoran/{Deployment.Instance.ProjectName}/{Deployment.Instance.StackName}");
 
-        var modelVersion = (string?) currentStack.GetValueAsync(nameof(ModelVersion)).GetAwaiter().GetResult();
-
-        return modelVersion;
+        return (string?) currentStack.GetValueAsync(nameof(ModelVersion)).GetAwaiter().GetResult();
     }
 
     public string GetModelVersionForStagingSlot()
     {
+        if (Deployment.Instance.IsDryRun)
+        {
+            return "https://localhost/model.zip";
+        }
+
         var modelVersion = System.Environment.GetEnvironmentVariable("ML_MODEL_URI");
 
         if (string.IsNullOrEmpty(modelVersion))
@@ -36,7 +39,8 @@ class MyStack : Stack
 
     public MyStack()
     {
-        ProjectStack = Deployment.Instance.ProjectName + "-" + Deployment.Instance.StackName;
+        ProjectStack = $"{Deployment.Instance.ProjectName}-{Deployment.Instance.StackName}";
+
         StackSuffix = Regex.Replace(Deployment.Instance.StackName, "[^a-z0-9]", string.Empty, RegexOptions.IgnoreCase);
 
         var stagingModelVersion = GetModelVersionForStagingSlot();
@@ -87,18 +91,20 @@ class MyStack : Stack
             ApplicationType = "web"
         });
 
-        var app = new FunctionApp("fxapp" + StackSuffix.ToLowerInvariant(), new FunctionAppArgs
+        var valuesMap = new InputMap<string>()
         {
-            ResourceGroupName = resourceGroup.Name,
-            AppServicePlanId = appServicePlan.Id,
-            AppSettings =
-            {
                 {"runtime", "dotnet"},
                 {"WEBSITE_RUN_FROM_PACKAGE", codeBlobUrl},
                 {"AzureWebJobsStorage", storageAccount.PrimaryConnectionString},
                 {"ML_MODEL_URI", productionModelVersion},
                 {"APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey}
-            },
+        };
+
+        var app = new FunctionApp("fxapp" + StackSuffix.ToLowerInvariant(), new FunctionAppArgs
+        {
+            ResourceGroupName = resourceGroup.Name,
+            AppServicePlanId = appServicePlan.Id,
+            AppSettings = valuesMap,
             SiteConfig = new FunctionAppSiteConfigArgs
             {
                 Cors = new FunctionAppSiteConfigCorsArgs
